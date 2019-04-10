@@ -2,9 +2,10 @@ import { Command } from '../models/responder';
 import { Client, GuildChannel, TextChannel } from 'discord.js';
 import { ChannelCommandParsed, ChannelCommandParser } from '../parsers/channel-command.parser';
 import { ChannelCommandValidator } from '../validators/channel-command.validator';
-import { from, Observable } from 'rxjs';
+import { from, NEVER, Observable } from 'rxjs';
 import { Config } from '../../config';
 import { flatMap, tap } from 'rxjs/operators';
+import { CommandError } from '../models/error';
 
 class ChannelCommand implements Command {
   public readonly command: string = 'channel';
@@ -22,6 +23,12 @@ class ChannelCommand implements Command {
         tap((channel: TextChannel) => {
           return from(sourceChannel.send(`Channel ${channel} created!`));
         }),
+    );
+  }
+
+  public respondError({ message, source }: CommandError): Observable<never> {
+    return from(source._message.reply(`Error yo ${ message }`)).pipe(
+        flatMap(() => NEVER),
     );
   }
 }

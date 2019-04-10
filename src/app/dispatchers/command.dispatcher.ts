@@ -5,14 +5,11 @@ import { catchError, filter, flatMap, map, switchMap, takeWhile, tap } from 'rxj
 import { DispatcherEvent, MessageDispatcher } from '../models/dispatcher';
 import { CommandMessageParsed, CommandMessageParser } from '../parsers/command-message.parser';
 import { CommandMessageValidator } from '../validators/command-message.validator';
-import { CommandErrorHandler } from '../error-handlers/command.error-handler';
 
 class CommandDispatcher implements MessageDispatcher {
   public readonly event = DispatcherEvent.Message;
   public readonly parser: CommandMessageParser = new CommandMessageParser();
   public readonly validator: CommandMessageValidator = new CommandMessageValidator();
-
-  private commandErrorHandler: CommandErrorHandler = new CommandErrorHandler();
 
   private commandStream: Subject<CommandMessageParsed> = new Subject<CommandMessageParsed>();
   private registeredCommands: Map<CommandFactory, Command> = new Map<CommandFactory, Command>();
@@ -38,11 +35,9 @@ class CommandDispatcher implements MessageDispatcher {
         switchMap((commandMessageParsed: CommandMessageParsed) => {
           return of(commandMessageParsed).pipe(
               filter(command.validator.validate()),
-              catchError(this.commandErrorHandler.handle),
+              catchError(command.respondError),
           );
         }),
-        filter(command.validator.validate()),
-        catchError(this.commandErrorHandler.handle),
         map(command.parser.parse),
         flatMap(command.respond.bind(command)),
     ).subscribe();

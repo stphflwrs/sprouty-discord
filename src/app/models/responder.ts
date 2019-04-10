@@ -20,6 +20,8 @@ interface Command extends Responder {
   readonly validator: CommandValidator;
 
   respond(commandParsed: CommandParsed): Observable<any>;
+
+  respondError(error: Error): Observable<never>;
 }
 
 interface CommandFactory extends ResponderFactory {
