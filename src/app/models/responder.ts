@@ -4,28 +4,30 @@ import { CommandValidator, Validator } from './validator';
 import { Observable } from 'rxjs';
 
 interface Responder {
-  readonly parser: Parser;
-  readonly validator: Validator;
-
   respond(input: unknown): unknown;
-}
-
-interface ResponderFactory {
-  new(client: Client): Responder;
-}
-
-interface Command extends Responder {
-  readonly command: string;
-  readonly parser: CommandParser<CommandParsed>;
-  readonly validator: CommandValidator;
-
-  respond(commandParsed: CommandParsed): Observable<any>;
-
   respondError(error: Error): Observable<never>;
 }
 
-interface CommandFactory extends ResponderFactory {
-  new(client: Client): Command;
+interface ResponderParams {
+
 }
 
-export { Responder, ResponderFactory, Command, CommandFactory };
+interface ResponderFactory {
+  new(client: Client, responderParams: ResponderParams): Responder;
+}
+
+interface Command extends Responder {
+  respond(commandParsed: CommandParsed): Observable<any>;
+}
+
+interface CommandParams extends ResponderParams {
+  readonly command: string;
+  readonly parser: CommandParser<CommandParsed>;
+  readonly validator: CommandValidator;
+}
+
+interface CommandFactory extends ResponderFactory {
+  new(client: Client, commandParams: CommandParams): Command;
+}
+
+export { Responder, ResponderParams, ResponderFactory, Command, CommandParams, CommandFactory };

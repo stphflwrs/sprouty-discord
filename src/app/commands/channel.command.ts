@@ -1,17 +1,12 @@
 import { Command } from '../models/responder';
 import { Client, GuildChannel, TextChannel } from 'discord.js';
-import { ChannelCommandParsed, ChannelCommandParser } from '../parsers/channel-command.parser';
-import { ChannelCommandValidator } from '../validators/channel-command.validator';
+import { ChannelCommandParsed } from '../parsers/channel-command.parser';
 import { from, NEVER, Observable } from 'rxjs';
 import { Config } from '../../config';
 import { flatMap, tap } from 'rxjs/operators';
 import { CommandError } from '../models/error';
 
 class ChannelCommand implements Command {
-  public readonly command: string = 'channel';
-  public readonly parser: ChannelCommandParser = new ChannelCommandParser();
-  public readonly validator: ChannelCommandValidator = new ChannelCommandValidator();
-
   public constructor(private client: Client) {}
 
   public respond({ guild, sourceChannel, channelName }: ChannelCommandParsed): Observable<GuildChannel> {

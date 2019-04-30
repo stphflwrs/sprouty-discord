@@ -1,4 +1,4 @@
-import { CommandFactory, ResponderFactory } from './responder';
+import { CommandFactory, CommandParams, ResponderFactory, ResponderParams } from './responder';
 import { Client, Message, MessageReaction } from 'discord.js';
 import { MessageValidator, Validator } from './validator';
 import { Observable } from 'rxjs';
@@ -11,7 +11,7 @@ interface Dispatcher {
 
   attachStream(stream: Observable<unknown>): void;
   detachStream(): void;
-  register(ResponderFactory: ResponderFactory): void;
+  register(ResponderFactory: ResponderFactory, responderParams?: ResponderParams): void;
   unregister(ResponderFactory: ResponderFactory): void;
 }
 
@@ -31,7 +31,7 @@ interface MessageDispatcher {
   validator: MessageValidator;
 
   attachStream(messageStream: Observable<MessageParsed>): void;
-  register(Command: CommandFactory): void;
+  register(Command: CommandFactory, commandParams: CommandParams): void;
   unregister(Command: CommandFactory): void;
 }
 

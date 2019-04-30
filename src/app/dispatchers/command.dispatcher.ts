@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { from, Observable, of, Subject } from 'rxjs';
-import { Command, CommandFactory } from '../models/responder';
+import { Command, CommandFactory, CommandParams } from '../models/responder';
 import { catchError, filter, flatMap, map, switchMap, takeWhile, tap } from 'rxjs/operators';
 import { DispatcherEvent, MessageDispatcher } from '../models/dispatcher';
 import { CommandMessageParsed, CommandMessageParser } from '../parsers/command-message.parser';
@@ -26,19 +26,19 @@ class CommandDispatcher implements MessageDispatcher {
     this.commandStream.complete();
   }
 
-  public register(Command: CommandFactory): Command {
-    const command = new Command(this.client);
+  public register(Command: CommandFactory, commandParams: CommandParams): Command {
+    const command = new Command(this.client, commandParams);
     this.registeredCommands.set(Command, command);
     this.commandStream.pipe(
         takeWhile(() => this.registeredCommands.has(Command)),
-        filter(({ command: commandName }: CommandMessageParsed) => command.command === commandName ),
+        filter(({ command: commandName }: CommandMessageParsed) => commandParams.command === commandName ),
         switchMap((commandMessageParsed: CommandMessageParsed) => {
           return of(commandMessageParsed).pipe(
-              filter(command.validator.validate()),
+              filter(commandParams.validator.validate()),
               catchError(command.respondError),
           );
         }),
-        map(command.parser.parse),
+        map(commandParams.parser.parse),
         flatMap(command.respond.bind(command)),
     ).subscribe();
     return command;
